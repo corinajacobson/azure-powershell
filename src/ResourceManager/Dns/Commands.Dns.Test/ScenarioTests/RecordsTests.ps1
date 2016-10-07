@@ -1087,15 +1087,11 @@ function Test-RecordSetEndsWithZoneName
 	$resourceGroup = TestSetup-CreateResourceGroup
 	$zone = New-AzureRmDnsZone -Name $zoneName -ResourceGroupName $resourceGroup.ResourceGroupName
 
-	$warning = $env:TEMP + "\warning.txt"
-	[string]$message = [System.String]::Format("The relative record set name `"{0}`" includes the zone name `"{1}`". This  will result in the set name `"{0}.{1}`". Usage of this cmdlet without DnsRecords parameter will be deprecated soon. If there is a need to create empty record  set, please specify DnsRecords parameter with an empty array as value", $recordName, $zoneName);
-	(New-AzureRmDnsRecordSet -Name $recordName -RecordType A -ZoneName $zoneName -ResourceGroupName $resourceGroup.ResourceGroupName -Ttl 100) 3> $warning
+	$message = [System.String]::Format("The relative record set name `"{0}`" includes the zone name `"{1}`". This will result in the set name `"{0}.{1}`". Usage of this cmdlet without DnsRecords parameter will be deprecated soon. If there is a need to create empty record set, please specify DnsRecords parameter with an empty array as value Microsoft.Azure.Commands.Dns.DnsRecordSet", $recordName, $zoneName);
+	 $warning = (New-AzureRmDnsRecordSet -Name $recordName -RecordType A -ZoneName $zoneName -ResourceGroupName $resourceGroup.ResourceGroupName -Ttl 100) 3>&1
 
-	if(Test-Path $warning){
-		$warningCombined = (Get-Content $warning)
-		Assert-AreEqual $message $warningCombined
-		Remove-Item $warning
-	}
+
+		Assert-AreEqual $message $warning
 
 	Remove-AzureRmDnsRecordSet -Name $recordName -ZoneName $zoneName -ResourceGroupName $resourceGroup.ResourceGroupName -RecordType A -PassThru -Confirm:$false
 	Remove-AzureRmDnsZone -Name $zoneName -ResourceGroupName $resourceGroup.ResourceGroupName -Confirm:$false
